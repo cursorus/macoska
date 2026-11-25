@@ -12,17 +12,24 @@ typedef struct { CGSize size; CGFloat scale; CGFloat continuousCornerRadius; } M
 @interface SBFloatingDockView : UIView @end
 
 static const void *kMCKBar = &kMCKBar;
+static BOOL mckBusy = NO;
 
 // Puts the macOS bar into the system status bar and hides the stock content.
 // The status bar keeps its frame, so app layout does not shift.
+// Every mutation is guarded: touching subviews inside layoutSubviews can
+// re-invalidate layout and spin SpringBoard forever if done unconditionally.
 static void MCKSync(UIView *sb) {
+    if (mckBusy) return;
+    mckBusy = YES;
+
     MCKBarView *bar = objc_getAssociatedObject(sb, kMCKBar);
     if (!MCKBool(@"barEnabled", YES)) {
         if (bar) {
             [bar removeFromSuperview];
             objc_setAssociatedObject(sb, kMCKBar, nil, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
-            for (UIView *v in sb.subviews) v.hidden = NO;
+            for (UIView *v in sb.subviews) if (v.hidden) v.hidden = NO;
         }
+        mckBusy = NO;
         return;
     }
     if (!bar) {
@@ -30,9 +37,11 @@ static void MCKSync(UIView *sb) {
         objc_setAssociatedObject(sb, kMCKBar, bar, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
         [sb addSubview:bar];
     }
-    bar.frame = sb.bounds;
-    [sb bringSubviewToFront:bar];
-    for (UIView *v in sb.subviews) if (v != bar) v.hidden = YES;
+    if (!CGRectEqualToRect(bar.frame, sb.bounds)) bar.frame = sb.bounds;
+    if (sb.subviews.lastObject != bar) [sb bringSubviewToFront:bar];
+    for (UIView *v in sb.subviews) if (v != bar && !v.hidden) v.hidden = YES;
+
+    mckBusy = NO;
 }
 
 %group Bar
