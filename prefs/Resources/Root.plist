@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<plist version="1.0"><dict><key>title</key><string>macoska</string><key>items</key><array>
+<dict><key>cell</key><string>PSGroupCell</string><key>label</key><string>Menu bar</string><key>footerText</key><string>Replaces the system status bar with a macOS-style menu bar.</string></dict>
+<dict><key>cell</key><string>PSSwitchCell</string><key>label</key><string>macOS menu bar</string><key>key</key><string>barEnabled</string><key>default</key><true/><key>defaults</key><string>com.cursorus.macoska</string></dict>
+<dict><key>cell</key><string>PSGroupCell</string><key>label</key><string>Dock</string><key>footerText</key><string>Scales system dock icons and dock height. Needs a respring.</string></dict>
+<dict><key>cell</key><string>PSSwitchCell</string><key>label</key><string>Resize dock</string><key>key</key><string>dockEnabled</string><key>default</key><true/><key>defaults</key><string>com.cursorus.macoska</string></dict>
+<dict><key>cell</key><string>PSSliderCell</string><key>key</key><string>dockScale</string><key>default</key><real>1.2</real><key>min</key><real>0.8</real><key>max</key><real>1.6</real><key>showValue</key><true/><key>defaults</key><string>com.cursorus.macoska</string></dict>
+<dict><key>cell</key><string>PSGroupCell</string></dict>
+<dict><key>cell</key><string>PSButtonCell</string><key>label</key><string>Respring</string><key>action</key><string>respring</string></dict>
+</array></dict></plist>
