@@ -1,5 +1,9 @@
 name: build
-on: [push, workflow_dispatch]
+on:
+  push:
+  workflow_dispatch:
+permissions:
+  contents: write
 jobs:
   build:
     runs-on: macos-latest
@@ -11,3 +15,14 @@ jobs:
         with:
           name: macoska-deb
           path: packages/*.deb
+      # Manual run (Run workflow) or a pushed v* tag publishes a release with the .deb,
+      # which is what cursorus/repo downloads into the Sileo repo.
+      - name: Release
+        if: github.event_name == 'workflow_dispatch' || startsWith(github.ref, 'refs/tags/v')
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          VER=$(grep '^Version:' control | awk '{print $2}')
+          TAG="v$VER"
+          gh release delete "$TAG" --yes --cleanup-tag || true
+          gh release create "$TAG" packages/*.deb --target "$GITHUB_SHA" --title "macoska $VER" --notes "iPadOS 15, rootless (Dopamine)"
