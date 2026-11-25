@@ -1,7 +1,7 @@
 Package: com.cursorus.macoska
 Name: macoska
 Depends: mobilesubstrate (>= 0.9.5000), preferenceloader, firmware (>= 15.0)
-Version: 0.1.0
+Version: 0.1.1
 Architecture: iphoneos-arm64
 Description: macOS-style menu bar and resizable system dock for iPadOS 15
 Maintainer: cursorus

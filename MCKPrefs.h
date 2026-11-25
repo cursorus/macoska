@@ -2,22 +2,35 @@
 
 #define MCK_DOMAIN CFSTR("com.cursorus.macoska")
 
-static inline id MCKPref(NSString *key) {
-    return CFBridgingRelease(CFPreferencesCopyAppValue((__bridge CFStringRef)key, MCK_DOMAIN));
+// Read once per process launch (a respring applies changes), so layout code
+// never talks to cfprefsd.
+static inline NSDictionary *MCKPrefsDict(void) {
+    static NSDictionary *d;
+    static dispatch_once_t once;
+    dispatch_once(&once, ^{
+        NSDictionary *r = nil;
+        CFArrayRef keys = CFPreferencesCopyKeyList(MCK_DOMAIN, kCFPreferencesCurrentUser, kCFPreferencesAnyHost);
+        if (keys) {
+            r = CFBridgingRelease(CFPreferencesCopyMultiple(keys, MCK_DOMAIN, kCFPreferencesCurrentUser, kCFPreferencesAnyHost));
+            CFRelease(keys);
+        }
+        d = r ?: @{};
+    });
+    return d;
 }
 
 static inline BOOL MCKBool(NSString *key, BOOL def) {
-    id v = MCKPref(key);
+    id v = MCKPrefsDict()[key];
     return v ? [v boolValue] : def;
 }
 
 static inline CGFloat MCKFloat(NSString *key, CGFloat def) {
-    id v = MCKPref(key);
+    id v = MCKPrefsDict()[key];
     return v ? [v doubleValue] : def;
 }
 
 static inline CGFloat MCKDockScale(void) {
-    if (!MCKBool(@"dockEnabled", YES)) return 1.0;
+    if (!MCKBool(@"dockEnabled", NO)) return 1.0;
     CGFloat s = MCKFloat(@"dockScale", 1.2);
     return MIN(MAX(s, 0.8), 1.6);
 }
